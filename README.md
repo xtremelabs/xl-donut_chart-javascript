@@ -32,6 +32,7 @@ Create the donut:
 ```
 
 ###Roadmap
+* Add minimized version
 * Interface to update chart and animate to new values
 * Text animations
 * Improve arc animation efficiency
