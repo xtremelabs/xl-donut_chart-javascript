@@ -1,6 +1,6 @@
 ###Overview
 
-A simple animated donut chart for [Raphaël JS](http://raphaeljs.com/). You can check out an example [here](http://jsfiddle.net/Osis/be6bE/6/light/).
+A simple animated donut chart for [Raphaël JS](http://raphaeljs.com/). You can check out an example [here](http://jsfiddle.net/Osis/be6bE/7/).
 
 ###Usage
 
