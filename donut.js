@@ -5,7 +5,8 @@ var DonutChart = function(paper, columns, radius, text, options) {
     this._text = text;
     this._arcs = [];
     this._options = (typeof options === "undefined") ? {} : options;
-    this._strokeWidth = this._options.strokeWidth || 25;
+    this._strokeWidth  = this._options.strokeWidth || 25;
+    this._legendOptions = (typeof this._options.legend === "undefined") ? {} : this._options.legend;
 
     this._addPercentagesToColumns = function() {
         var totalValue = 0;
@@ -92,31 +93,72 @@ var DonutChart = function(paper, columns, radius, text, options) {
         });
     };
 
+    this._drawLegendText = function(xCood, yCood, label) {
+        var text = this._paper.text(xCood, yCood, label);
+        var options = ({
+            "text-anchor": "start",
+            "font-size": "13px"
+        });
+
+        if (this._legendOptions["font-color"]) { options["fill"]      = this._legendOptions["font-color"]; }
+        if (this._legendOptions["font-size"])  { options["font-size"] = this._legendOptions["font-size"]; }
+        if (this._legendOptions["font"])       { options["font"]      = this._legendOptions["font"]; }
+
+        text.attr(options);
+        return text;
+    };
+
+    this._drawLegendSquare = function(xCood, yCood, width, color) {
+        var square = this._paper.rect(xCood, yCood, width, width, 0);
+        square.attr({
+            stroke: color,
+            fill: color
+        });
+        return square;
+    };
+
     this._drawLegend = function() {
         var rectHeight = 20,
             rectWidth  = 20,
             rectYAxis  = (this._radius * 2) + (this._strokeWidth) + rectHeight + 20,
             rectXAxis  = 10,
             textXAxis  = rectXAxis + rectWidth + 20;
+            startYAxis = rectYAxis,
+            startXAxis = rectXAxis,
+            withinBounds = false;
 
-        for(var i=0, length=this._columns.length; i < length; i++){
-            var color     = this._columns[i].color,
-                label     = this._columns[i].label;
+        var paperHeight = this._paper.height,
+            paperWidth  = this._paper.width;
 
-            var rectangle = this._paper.rect(rectXAxis, rectYAxis, rectWidth, rectHeight, 0);
-            rectangle.attr({
-                stroke: color,
-                fill: color
-            });
+        var maxLegendWidth = 0;
 
-            var text = this._paper.text(textXAxis, (rectYAxis + 10), label);
-            text.attr({
-                fill: color,
-                "text-anchor": "start",
-                "font-size": "13px"
-            });
+        withinBounds = ( (rectYAxis + rectHeight) <= paperHeight );
+
+        for(var i=0, length=this._columns.length; (i < length) && withinBounds; i++){
+            var color = this._columns[i].color,
+                label = this._columns[i].label;
+
+            var square = this._drawLegendSquare(rectXAxis, rectYAxis, rectWidth, color);
+
+            textXAxis = rectXAxis + rectWidth + 10;
+            var text = this._drawLegendText(textXAxis, (rectYAxis + 10), label);
+            if ((text.getBBox().x2 - rectXAxis) > maxLegendWidth) {
+                maxLegendWidth = (text.getBBox().x2 - rectXAxis);
+            }
 
             rectYAxis = rectYAxis + rectHeight + 10;
+            if ( (rectYAxis + rectHeight) <= paperHeight ) {
+                withinBounds = true;
+            }
+            else if ((rectXAxis + maxLegendWidth + maxLegendWidth) <= paperWidth) {
+                withinBounds = true;
+                rectYAxis = startYAxis;
+                rectXAxis = rectXAxis + maxLegendWidth + 10;
+                maxLegendWidth = 0;
+            }
+            else {
+                withinBounds = false;
+            }
         }
     };
 
@@ -126,7 +168,7 @@ var DonutChart = function(paper, columns, radius, text, options) {
     this._drawArcs();
     this._animateArcs();
 
-    if (this._options.legendVisible) {
+    if (this._legendOptions.visible) {
       this._drawLegend();
     }
 };
